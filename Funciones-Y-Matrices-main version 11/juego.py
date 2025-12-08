@@ -1,8 +1,11 @@
+
 # Clase Juego (lógica principal y bucle)
 import pygame
 import sys
 import math
 import random
+from pathlib import Path
+
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, TILE_SIZE, VISIBLE_RADIUS, FPS
 from config import BLACK, WHITE, GRAY, DARK_GRAY, GREEN, BROWN, RED, BLUE, YELLOW, PURPLE
 
@@ -23,13 +26,14 @@ except Exception:
     SCORE_LEVEL = 500
     SCORE_LEVEL_BONUS_PER_LEVEL = 50
 
-# Texturas & sonidos
+# Texturas & sonidos & HUD icons
 try:
     from config import IMG_PLAYER, IMG_ENEMY, IMG_CHEST, IMG_PORTAL, IMG_FLOOR, IMG_WALL, RENDER_SCALE
     from config import SND_CHEST, SND_SWORD, SND_HURT, SND_PORTAL
     from config import SND_MUSIC_TITLE, SND_MUSIC_GAMEOVER, MUSIC_VOLUME, FX_VOLUME
     from config import HUD_HEART_FULL, HUD_HEART_EMPTY, HUD_ARMOR_ON, HUD_ARMOR_OFF, HUD_SWORD_ON, HUD_SWORD_OFF
 except Exception:
+    # Fallbacks si algo faltara
     IMG_PLAYER = "assets/images/player.png"
     IMG_ENEMY  = "assets/images/enemy.png"
     IMG_CHEST  = "assets/images/chest.png"
@@ -45,12 +49,12 @@ except Exception:
     SND_MUSIC_GAMEOVER = "assets/sounds/gameover.wav"
     MUSIC_VOLUME = 0.5
     FX_VOLUME    = 0.8
-    HUD_HEART_FULL = "assets/images/heart_full.png"
+    HUD_HEART_FULL  = "assets/images/heart_full.png"
     HUD_HEART_EMPTY = "assets/images/heart_empty.png"
-    HUD_ARMOR_ON = "assets/images/armor_on.png"
-    HUD_ARMOR_OFF = "assets/images/armor_off.png"
-    HUD_SWORD_ON = "assets/images/sword_on.png"
-    HUD_SWORD_OFF = "assets/images/sword_off.png"
+    HUD_ARMOR_ON    = "assets/images/armor_on.png"
+    HUD_ARMOR_OFF   = "assets/images/armor_off.png"
+    HUD_SWORD_ON    = "assets/images/sword_on.png"
+    HUD_SWORD_OFF   = "assets/images/sword_off.png"
 
 from mapa import Mapa
 
@@ -64,12 +68,12 @@ class Juego:
         self.mensaje = ""
         self.mensaje_tiempo = 0
         self.pista_portal = ""
-        self.estado = "inicio"
+        self.estado = "inicio"  # inicio | jugando | gameover
         self.score_total = 0
         self.flash_score_text = ""
         self.flash_score_time = 0
         self.flash_score_duration = 1500
-        self.tile_px = int(TILE_SIZE * (RENDER_SCALE if isinstance(RENDER_SCALE, (int,float)) else 1.0))
+        self.tile_px = int(TILE_SIZE * (RENDER_SCALE if isinstance(RENDER_SCALE, (int, float)) else 1.0))
         # texturas
         self.tex_player = None
         self.tex_enemy = None
@@ -108,7 +112,7 @@ class Juego:
                 return pygame.transform.smoothscale(img, (self.tile_px, self.tile_px))
             except Exception:
                 surf = pygame.Surface((self.tile_px, self.tile_px), pygame.SRCALPHA if use_alpha else 0)
-                surf.fill((200, 0, 200, 180) if use_alpha else (200,0,200))
+                surf.fill((200, 0, 200, 180) if use_alpha else (200, 0, 200))
                 return surf.convert_alpha() if use_alpha else surf.convert()
         self.tex_player = load_scaled(IMG_PLAYER, True)
         self.tex_enemy  = load_scaled(IMG_ENEMY, True)
@@ -116,14 +120,15 @@ class Juego:
         self.tex_portal = load_scaled(IMG_PORTAL, True)
         self.tex_floor  = load_scaled(IMG_FLOOR, False)
         self.tex_wall   = load_scaled(IMG_WALL, False)
+
         # HUD icons (24 px)
         def load_hud(path):
             try:
                 img = pygame.image.load(path).convert_alpha()
                 return pygame.transform.smoothscale(img, (24, 24))
             except Exception:
-                surf = pygame.Surface((24,24), pygame.SRCALPHA)
-                surf.fill((255,0,255,150))
+                surf = pygame.Surface((24, 24), pygame.SRCALPHA)
+                surf.fill((255, 0, 255, 150))
                 return surf
         self.hud_heart_full  = load_hud(HUD_HEART_FULL)
         self.hud_heart_empty = load_hud(HUD_HEART_EMPTY)
@@ -154,7 +159,7 @@ class Juego:
         try:
             pygame.mixer.music.load(SND_MUSIC_TITLE)
             pygame.mixer.music.set_volume(MUSIC_VOLUME)
-            pygame.mixer.music.play(-1)
+            pygame.mixer.music.play(-1)  # loop
         except Exception:
             pass
 
@@ -162,7 +167,7 @@ class Juego:
         try:
             pygame.mixer.music.load(SND_MUSIC_GAMEOVER)
             pygame.mixer.music.set_volume(MUSIC_VOLUME)
-            pygame.mixer.music.play(-1)
+            pygame.mixer.music.play(-1)  # loop
         except Exception:
             pass
 
@@ -366,10 +371,13 @@ class Juego:
                 if self.snd_chest: self.snd_chest.play()
                 if c.contenido == 'armadura':
                     j.armaduras += 1
+                    self.mostrar_mensaje("¡Cofre abierto! ARMADURA obtenida.")
                 elif c.contenido == 'espada':
                     j.espadas += 1
+                    self.mostrar_mensaje("¡Cofre abierto! ESPADA obtenida.")
                 elif c.contenido == 'dinero':
                     j.puntuacion += c.valor
+                    self.mostrar_mensaje(f"¡Cofre abierto! Dinero +{c.valor}. Puntos: {j.puntuacion}")
                 self.score_total += SCORE_ITEM
                 self.mostrar_flash_score(f"+{SCORE_ITEM}")
                 return True
@@ -435,9 +443,9 @@ class Juego:
         pygame.display.flip()
 
     def dibujar_minimapa(self):
-        max_w = MINIMAP_MAX_W if isinstance(MINIMAP_MAX_W, (int,float)) else 220
-        max_h = MINIMAP_MAX_H if isinstance(MINIMAP_MAX_H, (int,float)) else 180
-        margin = MINIMAP_MARGIN if isinstance(MINIMAP_MARGIN, (int,float)) else 10
+        max_w = MINIMAP_MAX_W if isinstance(MINIMAP_MAX_W, (int, float)) else 220
+        max_h = MINIMAP_MAX_H if isinstance(MINIMAP_MAX_H, (int, float)) else 180
+        margin = MINIMAP_MARGIN if isinstance(MINIMAP_MARGIN, (int, float)) else 10
         filas = self.mapa_actual.filas
         columnas = self.mapa_actual.columnas
         tile_w = max_w / max(1, columnas)
@@ -482,6 +490,7 @@ class Juego:
 
     def dibujar_hud(self):
         j = self.mapa_actual.jugador
+
         # --- SOLO ÍCONOS (corazones x2, armadura on/off, espada on/off) ---
         base_x, base_y = 10, 10  # barra superior izquierda
         spacing = 30
@@ -496,15 +505,30 @@ class Juego:
         # Espada
         sword_icon = self.hud_sword_on if j.espadas > 0 else self.hud_sword_off
         self.screen.blit(sword_icon, (base_x + spacing*3, base_y))
+
+        # --- Textos solicitados (debajo de los íconos) ---
+        tx = 10
+        ty = base_y + 35
+        movs_texto = self.font.render(f"Movimientos: {j.movimientos}", True, WHITE)
+        self.screen.blit(movs_texto, (tx, ty))
+        pos_texto = self.font.render(f"Posición: ({j.x}, {j.y})", True, WHITE)
+        self.screen.blit(pos_texto, (tx, ty + 28))
+        mapa_texto = self.font.render(f"Mapa: {self.mapa_actual.filas}x{self.mapa_actual.columnas}", True, WHITE)
+        self.screen.blit(mapa_texto, (tx, ty + 56))
+        pista_texto = self.font.render(f"Pista portal: {self.pista_portal}", True, YELLOW)
+        self.screen.blit(pista_texto, (tx, ty + 84))
+
         # --- Puntaje acumulado TOTAL (arriba derecha) ---
         puntaje_total_surface = self.font.render(f"Puntaje: {self.score_total}", True, WHITE)
         right_x = SCREEN_WIDTH - puntaje_total_surface.get_width() - 10
         self.screen.blit(puntaje_total_surface, (right_x, 10))
+
         # Mensaje temporal
         if self.mensaje:
             msg_surface = self.font.render(self.mensaje, True, YELLOW)
             msg_rect = msg_surface.get_rect(center=(SCREEN_WIDTH // 2, 30))
             self.screen.blit(msg_surface, msg_rect)
+
         # Flash de puntaje
         if self.flash_score_text:
             flash_surface = self.font.render(self.flash_score_text, True, WHITE)
