@@ -1,4 +1,3 @@
-
 # Constantes y configuración global (con rutas absolutas de assets)
 import pygame
 pygame.init()
@@ -36,15 +35,15 @@ MONEY_MIN = 10
 MONEY_MAX = 50
 
 # --- Minimap ---
-MINIMAP_MAX_W = 440
-MINIMAP_MAX_H = 360
-MINIMAP_MARGIN = 20
+MINIMAP_MAX_W = 220
+MINIMAP_MAX_H = 180
+MINIMAP_MARGIN = 10
 
 # --- Puntajes ---
 SCORE_ITEM = 50
 SCORE_ENEMY = 100
 SCORE_LEVEL = 500
-SCORE_LEVEL_BONUS_PER_LEVEL = 50  # bonus adicional por nivel
+SCORE_LEVEL_BONUS_PER_LEVEL = 50
 
 # --- Texturas (rutas absolutas) ---
 IMG_PLAYER = asset_path('assets', 'images', 'player.png')
@@ -53,10 +52,9 @@ IMG_CHEST  = asset_path('assets', 'images', 'chest.png')
 IMG_PORTAL = asset_path('assets', 'images', 'portal.png')
 IMG_FLOOR  = asset_path('assets', 'images', 'floor.png')
 IMG_WALL   = asset_path('assets', 'images', 'wall.png')
-TITLE_IMAGE = asset_path('assets', 'images', 'title.png')
 
 # --- Escala de render ---
-RENDER_SCALE = 1.25  # mantener TILE_SIZE=40 y escalar a 1.25
+RENDER_SCALE = 1.25
 
 # --- Sonidos (FX) ---
 SND_CHEST  = asset_path('assets', 'sounds', 'chest.wav')
@@ -64,18 +62,30 @@ SND_SWORD  = asset_path('assets', 'sounds', 'sword.wav')
 SND_HURT   = asset_path('assets', 'sounds', 'hurt.wav')
 SND_PORTAL = asset_path('assets', 'sounds', 'portal.wav')
 
-# --- Música por estados (rutas absolutas) ---
-SND_MUSIC_TITLE    = asset_path('assets', 'sounds', 'music.wav')     # loop en título/juego
-SND_MUSIC_GAMEOVER = asset_path('assets', 'sounds', 'gameover.wav')  # loop en Game Over
+# --- Música por estados ---
+SND_MUSIC_TITLE    = asset_path('assets', 'sounds', 'music.wav')
+SND_MUSIC_GAMEOVER = asset_path('assets', 'sounds', 'gameover.wav')
 
 # Volúmenes
-MUSIC_VOLUME = 0.5   # 50 de 100
+MUSIC_VOLUME = 0.5
 FX_VOLUME    = 0.8
 
-# --- HUD icons (rutas absolutas) ---
+# --- HUD icons ---
 HUD_HEART_FULL  = asset_path('assets', 'images', 'heart_full.png')
 HUD_HEART_EMPTY = asset_path('assets', 'images', 'heart_empty.png')
 HUD_ARMOR_ON    = asset_path('assets', 'images', 'armor_on.png')
 HUD_ARMOR_OFF   = asset_path('assets', 'images', 'armor_off.png')
 HUD_SWORD_ON    = asset_path('assets', 'images', 'sword_on.png')
 HUD_SWORD_OFF   = asset_path('assets', 'images', 'sword_off.png')
+
+# --- Imagen de pantalla de título ---
+TITLE_IMAGE = asset_path('assets', 'images', 'title.png')
+
+# --- Imagen de pantalla de Game Over ---
+GAMEOVER_IMAGE = asset_path('assets', 'images', 'GAME-OVERr.png')  # usa tu archivo subido
+# Si prefieres renombrar el archivo en el repo:
+# GAMEOVER_IMAGE = asset_path('assets', 'images', 'gameover.png')
+
+# Posición relativa del puntaje sobre la imagen de Game Over (0.0 arriba, 1.0 abajo)
+GAMEOVER_SCORE_Y_FACTOR = 0.30   # ~35% del alto de la imagen
+GAMEOVER_SCORE_OFFSET   = 10     # px extra hacia arriba (ajuste fino)
