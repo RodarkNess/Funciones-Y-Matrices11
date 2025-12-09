@@ -36,9 +36,9 @@ MONEY_MIN = 10
 MONEY_MAX = 50
 
 # --- Minimap ---
-MINIMAP_MAX_W = 220
-MINIMAP_MAX_H = 180
-MINIMAP_MARGIN = 10
+MINIMAP_MAX_W = 440
+MINIMAP_MAX_H = 360
+MINIMAP_MARGIN = 20
 
 # --- Puntajes ---
 SCORE_ITEM = 50
@@ -53,6 +53,7 @@ IMG_CHEST  = asset_path('assets', 'images', 'chest.png')
 IMG_PORTAL = asset_path('assets', 'images', 'portal.png')
 IMG_FLOOR  = asset_path('assets', 'images', 'floor.png')
 IMG_WALL   = asset_path('assets', 'images', 'wall.png')
+TITLE_IMAGE = asset_path('assets', 'images', 'title.png')
 
 # --- Escala de render ---
 RENDER_SCALE = 1.25  # mantener TILE_SIZE=40 y escalar a 1.25
